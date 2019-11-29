@@ -26,6 +26,7 @@ public class WordCount {
             StringTokenizer itr = new StringTokenizer(value.toString());
             while (itr.hasMoreTokens()) {
                 word.set(itr.nextToken());
+                System.out.println("map " + word + " one " + one);
                 context.write(word, one);
             }
         }
@@ -43,8 +44,20 @@ public class WordCount {
                 sum += val.get();
             }
             result.set(sum);
+            System.out.println("reducer" + key  + " result "  + result);
             Map<Text, IntWritable> words = new HashMap<>();
             words.put(key, result);
+            
+            List list = new ArrayList(words.entrySet());
+            Collections.sort(list, new Comparator<Map.Entry<Integer, Integer>>() {
+                @Override
+                public int compare(Map.Entry<Integer, Integer> a, Map.Entry<Integer, Integer> b) {
+                    return a.getValue() - b.getValue();
+                }
+            });
+
+
+
             context.write(key, result);
         }
     }
@@ -60,9 +73,7 @@ public class WordCount {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
 
-        System.out.println(args[0]);
-        System.out.println(args[1]);
-        System.out.println(args[2]);
+
         FileInputFormat.addInputPath(job, new Path(args[1]));
         FileOutputFormat.setOutputPath(job, new Path(args[2]));
         System.exit(job.waitForCompletion(true) ? 0 : 1);
